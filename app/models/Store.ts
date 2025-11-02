@@ -1,9 +1,10 @@
 // models/Store.ts
 import { Schema, model, Document, Types } from "mongoose";
 import { randomUUID } from "crypto";
+import mongoose from "@/db.server";
 
 export interface IStore extends Document {
-  user: Types.ObjectId;
+  // user: Types.ObjectId;
   shop: string;
   accessToken: string;
   scope: string;
@@ -15,7 +16,7 @@ export interface IStore extends Document {
 }
 
 const storeSchema = new Schema<IStore>({
-  user: { type: Types.ObjectId, ref: "User", required: true },
+  // user: { type: Types.ObjectId, ref: "User", required: true },
   shop: { type: String, required: true, unique: true },
   accessToken: { type: String, required: true },
   scope: String,
@@ -34,4 +35,5 @@ storeSchema.pre("save", function (next) {
   next();
 });
 
-export default model<IStore>("Store", storeSchema);
+const Store= mongoose.models.Store || model<IStore>("Store", storeSchema);
+export default Store;

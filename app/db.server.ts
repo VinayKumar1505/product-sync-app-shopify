@@ -1,28 +1,23 @@
+// app/db.server.ts
 import mongoose from "mongoose";
 
-let isConnected = false; // global connection flag
+const MONGO_URI = process.env.MONGODB_URI!;
+const DB_NAME = process.env.MONGODB_DB || "shopify_app";
 
-export async function connectDB() {
-  if (isConnected && mongoose.connection.readyState === 1) {
-    // already connected
-    return mongoose.connection;
-  }
-  
-  const mongoUri = process.env.MONGODB_URI;
-  if (!mongoUri) {
-    throw new Error("MONGODB_URI is not defined in environment variables.");
-  }
-
-  try {
-    const db = await mongoose.connect(mongoUri, {
-      dbName: process.env.MONGODB_DB || "shopify_app",
-    });
-
-    isConnected = true;
-    console.log("MongoDB connected:", db.connection.name);
-    return db.connection;
-  } catch (err) {
-    console.error("MongoDB connection failed:", err);
-    throw err;
-  }
+if (!MONGO_URI) {
+  throw new Error("❌ MONGODB_URI not defined in environment variables.");
 }
+
+declare global {
+  var mongooseGlobal: typeof mongoose | undefined;
+}
+
+if (!global.mongooseGlobal) {
+  mongoose.connect(MONGO_URI, { dbName: DB_NAME })
+    .then(() => console.log(`✅ MongoDB connected to "${DB_NAME}"`))
+    .catch((err) => console.error("❌ MongoDB connection failed:", err));
+  global.mongooseGlobal = mongoose;
+}
+
+const db = global.mongooseGlobal;
+export default db;
